@@ -9,18 +9,20 @@ namespace ZRB_Tool_WV
 {
     public class ZRBResScript : ZRBRes
     {
-        public string fileName;
-        public byte[] data;
+        // Script file path
+        public string FileName { get; set; }
+
         public ZRBResScript(ZRBResourceEntry en, Stream s, long startPos)
         {
-            fileName = Helper.ReadCString(s);
+            FileName = Helper.ReadCString(s);
             MemoryStream m = new MemoryStream();
             while (s.Position < startPos + en.nextHeaderPos) 
                 m.WriteByte((byte)s.ReadByte());
-            data = m.ToArray();
+            Data = m.ToArray();
         }
 
         public override void LoadData(Stream s)
-        { }
+        {
+        }
     }
 }

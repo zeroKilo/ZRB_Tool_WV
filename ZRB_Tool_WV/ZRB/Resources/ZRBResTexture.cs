@@ -1,9 +1,5 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ZRB_Tool_WV
@@ -45,7 +41,6 @@ namespace ZRB_Tool_WV
         public uint depth;
         public uint states;
         public uint bias;
-        public byte[] data;
 
         private long loadAddress;
         public ZRBResTexture(ZRBFile file, ZRBResourceEntry e,  Stream s)
@@ -66,8 +61,8 @@ namespace ZRB_Tool_WV
         public override void LoadData(Stream s)
         {
             s.Seek(loadAddress, 0);
-            data = new byte[dataSize];
-            s.Read(data, 0, (int)dataSize);
+            Data = new byte[dataSize];
+            s.Read(Data, 0, (int)dataSize);
         }
 
         public string GetDetails()
@@ -132,7 +127,7 @@ namespace ZRB_Tool_WV
             m.Write(new byte[0x14], 0, 0x14);
             Helper.WriteU32(m, 0x08104000);
             m.Write(new byte[0x10], 0, 0x10);
-            m.Write(data, 0, data.Length);
+            m.Write(Data, 0, Data.Length);
             File.WriteAllBytes(filename, m.ToArray());
         }
 

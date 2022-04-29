@@ -1,32 +1,28 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ZRB_Tool_WV
 {
     public class ZRBResLocalizedText : ZRBRes
     {
-        public string text;
-        public byte[] data;
+        public string Text { get; set; }
 
-        private long loadAddress;
-        public ZRBResLocalizedText(ZRBFile file, Stream zs, ZRBResourceEntry e, Stream s)
+        private long m_LoadAddress;
+
+        public ZRBResLocalizedText(ZRBFile p_ZrbFile, Stream p_ZrbStream, ZRBResourceEntry p_ResourceEntry, Stream p_Stream)
         {
-            loadAddress = file.mainMemOffset + e.mainMemOffset;            
+            m_LoadAddress = p_ZrbFile.mainMemOffset + p_ResourceEntry.mainMemOffset;            
         }
 
         public override void LoadData(Stream s)
         {
-            s.Seek(loadAddress, 0);
+            s.Seek(m_LoadAddress, 0);
             MemoryStream m = new MemoryStream();
             int b;
             while ((b = s.ReadByte()) != -1 && b != 0)
                 m.WriteByte((byte)b);
-            data = m.ToArray();
-            text = Encoding.UTF8.GetString(data);
+            Data = m.ToArray();
+            Text = Encoding.UTF8.GetString(Data);
         }
     }
 }

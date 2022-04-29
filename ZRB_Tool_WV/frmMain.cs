@@ -12,13 +12,13 @@ using Be.Windows.Forms;
 
 namespace ZRB_Tool_WV
 {
-    public partial class Form1 : Form
+    public partial class frmMain : Form
     {
         public string basePath = "";
         public bool flatView = true;
         public List<ZRBFile> zrbList = new List<ZRBFile>();
         public ZRBFile currentZRB = null;
-        public Form1()
+        public frmMain()
         {
             InitializeComponent();
             Log.box = richTextBox1;
@@ -93,15 +93,15 @@ namespace ZRB_Tool_WV
             }
             else
             {
-                tv1.Nodes.Clear();
-                tv1.Nodes.Add(basePath);
-                tv1.BringToFront();
+                tvZrbs.Nodes.Clear();
+                tvZrbs.Nodes.Add(basePath);
+                tvZrbs.BringToFront();
             }
             foreach (ZRBFile zrb in zrbList)
                 if (flatView)
                     listBox1.Items.Add(zrb.myPath.Substring(basePath.Length));
                 else
-                    AddPathToNode(tv1.Nodes[0], zrb.myPath.Substring(basePath.Length));            
+                    AddPathToNode(tvZrbs.Nodes[0], zrb.myPath.Substring(basePath.Length));            
         }
 
         private void AddPathToNode(TreeNode root, string path)
@@ -129,7 +129,7 @@ namespace ZRB_Tool_WV
 
         private void RefreshFileDetails()
         {
-            listBox2.Items.Clear();
+            lstEntries.Items.Clear();
             if (currentZRB == null)
                 return;
             int count = 0;
@@ -147,13 +147,13 @@ namespace ZRB_Tool_WV
                         break;
                     case ZRBResourceEntry.ResType.Script:
                         ZRBResScript scr = (ZRBResScript)e.resource;
-                        s += "Script (\"" + scr.fileName + "\")";
+                        s += "Script (\"" + scr.FileName + "\")";
                         break;
                     default:
                         s += "Unknown (0x" + e.resourceType.ToString("X") + ")";
                         break;
                 }
-                listBox2.Items.Add(s);
+                lstEntries.Items.Add(s);
             }
         }
 
@@ -173,9 +173,9 @@ namespace ZRB_Tool_WV
                 }
         }
 
-        private void tv1_AfterSelect(object sender, TreeViewEventArgs e)
+        private void tvZrbs_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            TreeNode sel = tv1.SelectedNode;
+            TreeNode sel = tvZrbs.SelectedNode;
             if (sel == null)
                 return;
             string path = sel.Text;
@@ -195,29 +195,29 @@ namespace ZRB_Tool_WV
                 }
         }
 
-        private void listBox2_SelectedIndexChanged(object sender, EventArgs e)
+        private void lstEntries_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (currentZRB == null)
                 return;
-            int n = listBox2.SelectedIndex;
-            if (n == -1)
+            int selectedIndex = lstEntries.SelectedIndex;
+            if (selectedIndex == -1)
                 return;
             rtb1.Text = richTextBox1.Text = "";
             hb1.ByteProvider = new DynamicByteProvider(new byte[0]);
             pb1.Image = null;
             FileStream fs = new FileStream(currentZRB.myPath, FileMode.Open, FileAccess.Read);
-            ZRBResourceEntry en = currentZRB.header.entries[n];
+            ZRBResourceEntry en = currentZRB.header.entries[selectedIndex];
             if (en.resource != null)
                 en.resource.LoadData(fs);
             switch (en.resourceType)
             {
                 case ZRBResourceEntry.ResType.LocalizedText:
                     ZRBResLocalizedText ltex = (ZRBResLocalizedText)en.resource;
-                    rtb1.Text = ltex.text;
+                    rtb1.Text = ltex.Text;
                     break;
                 case ZRBResourceEntry.ResType.Texture:
                     ZRBResTexture tex = (ZRBResTexture)en.resource;
-                    hb1.ByteProvider = new DynamicByteProvider(tex.data);
+                    hb1.ByteProvider = new DynamicByteProvider(tex.Data);
                     if (File.Exists("dump.dds"))
                         File.Delete("dump.dds");
                     if (File.Exists("dump.png"))
@@ -235,7 +235,7 @@ namespace ZRB_Tool_WV
                     break;
                 case ZRBResourceEntry.ResType.Script:
                     ZRBResScript scr = (ZRBResScript)en.resource;
-                    hb1.ByteProvider = new DynamicByteProvider(scr.data);
+                    hb1.ByteProvider = new DynamicByteProvider(scr.Data);
                     break;
                 default:
                     break;
@@ -254,6 +254,103 @@ namespace ZRB_Tool_WV
         {
             if (basePath != "")
                 File.WriteAllText("lastpath.txt", basePath);
+        }
+
+        private void extractGameDataToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var s_FolderBrowserDialog = new FolderBrowserDialog
+            {
+                Description = "Select MAG directory (containing USRDIR, TROPDIR, LICDIR)",
+                ShowNewFolderButton = false
+            };
+
+            if (s_FolderBrowserDialog.ShowDialog() != DialogResult.OK)
+                return;
+        }
+
+        private void ExtractText(ZRBResLocalizedText p_LocalizedText)
+        {
+            var s_Contents = p_LocalizedText.Text;
+
+            var s_SaveFileDialog = new SaveFileDialog
+            {
+                Title = "Extract text",
+                Filter = "Text Files (*.txt)|*.txt",
+                FileName = "text"
+            };
+
+            if (s_SaveFileDialog.ShowDialog() != DialogResult.OK)
+                return;
+
+            File.WriteAllText(s_SaveFileDialog.FileName, s_Contents);
+        }
+
+        private void ExtractTexture(ZRBResTexture p_Texture)
+        {
+            var s_SaveFileDialog = new SaveFileDialog
+            {
+                Title = "Extract texture",
+                Filter = "Texture Data (*.bin)|*.bin|Direct Draw Surface (*.dds)|*.dds",
+                FileName = $"texture_{p_Texture.sizeX}_{p_Texture.sizeY}"
+            };
+
+            if (s_SaveFileDialog.ShowDialog() != DialogResult.OK)
+                return;
+
+            File.WriteAllBytes(s_SaveFileDialog.FileName, p_Texture.Data);
+        }
+
+        private void ExtractBinary(ZRBRes p_Resource)
+        {
+            var s_SaveFileDialog = new SaveFileDialog
+            {
+                Title = "Extract data",
+                Filter = "Binary File (*.bin)|*.bin",
+                FileName = "data"
+            };
+
+            if (s_SaveFileDialog.ShowDialog() != DialogResult.OK)
+                return;
+
+            File.WriteAllBytes(s_SaveFileDialog.FileName, p_Resource.Data);
+        }
+
+        private void cmuExtract_Click(object sender, EventArgs e)
+        {
+            if (currentZRB == null)
+                return;
+            int selectedIndex = lstEntries.SelectedIndex;
+            if (selectedIndex == -1)
+                return;
+            rtb1.Text = richTextBox1.Text = "";
+            hb1.ByteProvider = new DynamicByteProvider(new byte[0]);
+            pb1.Image = null;
+            FileStream fs = new FileStream(currentZRB.myPath, FileMode.Open, FileAccess.Read);
+            ZRBResourceEntry en = currentZRB.header.entries[selectedIndex];
+            
+            if (en.resource != null)
+                en.resource.LoadData(fs);
+            
+            switch (en.resourceType)
+            {
+                case ZRBResourceEntry.ResType.LocalizedText:
+                    ZRBResLocalizedText s_LocalizedText = (ZRBResLocalizedText)en.resource;
+                    ExtractText(s_LocalizedText);
+                    break;
+                case ZRBResourceEntry.ResType.Texture:
+                    ZRBResTexture s_Texture = (ZRBResTexture)en.resource;
+                    ExtractTexture(s_Texture);
+                    break;
+                //case ZRBResourceEntry.ResType.Script:
+                //    ZRBResScript s_Script = (ZRBResScript)en.resource;
+                //    Extrac
+                //    break;
+                default:
+                    ExtractBinary(en.resource);
+                    break;
+            }
+            Log.Write(en.GetDetails());
+            fs.Close();
         }
     }
 }
