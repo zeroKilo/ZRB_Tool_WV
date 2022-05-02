@@ -13,14 +13,17 @@ namespace ZRB_Tool_WV
         public uint headerOffset;
         public uint headerSize;
         public uint mainMemOffset;
+
         public uint mainMemSize;
         public uint tempMemOffset;
         public uint tempMemSize;
         public uint vramOffsetGPU;
+
         public uint vramSizeGPU;
         public uint vramOffsetIO;
         public uint vramSizeIO;
         public uint numClassCounts;
+
         public bool localized;
         public bool hasTableOfContents;
         public ZRBHeader header;

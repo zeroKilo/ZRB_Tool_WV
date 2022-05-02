@@ -149,6 +149,13 @@ namespace ZRB_Tool_WV
                         ZRBResScript scr = (ZRBResScript)e.resource;
                         s += "Script (\"" + scr.FileName + "\")";
                         break;
+                    case ZRBResourceEntry.ResType.Mesh:
+                        ZRBResMesh mesh = (ZRBResMesh)e.resource;
+                        if(mesh.isStatic)
+                            s += "Mesh (static)";
+                        else
+                            s += "Mesh (skeletal)";
+                        break;
                     default:
                         s += "Unknown (0x" + e.resourceType.ToString("X") + ")";
                         break;
@@ -237,7 +244,13 @@ namespace ZRB_Tool_WV
                     ZRBResScript scr = (ZRBResScript)en.resource;
                     hb1.ByteProvider = new DynamicByteProvider(scr.Data);
                     break;
+                case ZRBResourceEntry.ResType.Mesh:
+                    ZRBResMesh mesh = (ZRBResMesh)en.resource;
+                    hb1.ByteProvider = new DynamicByteProvider(en.resource.Data);
+                    Log.WriteLine("Vertexdata offset in file : 0x" + mesh.loadAddress.ToString("X"));
+                    break;
                 default:
+                    hb1.ByteProvider = new DynamicByteProvider(en.resource.Data);
                     break;
             }
             Log.Write(en.GetDetails());

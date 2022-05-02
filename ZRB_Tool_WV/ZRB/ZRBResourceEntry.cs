@@ -14,6 +14,7 @@ namespace ZRB_Tool_WV
             LocalizedText = 4,
             Texture = 5,
             Script = 7,
+            Mesh = 63,
         }
 
         public long _offset;
@@ -60,7 +61,11 @@ namespace ZRB_Tool_WV
                     case ResType.Script:
                         resource = new ZRBResScript(this, s, startPos);
                         break;
+                    case ResType.Mesh:
+                        resource = new ZRBResMesh(file, this, s, startPos);
+                        break;
                     default:
+                        resource = new ZRBResUnknown(this, s, startPos);
                         break;
                 }
         }

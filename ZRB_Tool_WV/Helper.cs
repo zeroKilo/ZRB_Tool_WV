@@ -31,6 +31,22 @@ namespace ZRB_Tool_WV
             return BitConverter.ToUInt32(data, 0);
         }
 
+        public static ushort ReadU16(Stream s)
+        {
+            byte[] data = new byte[2];
+            for (int i = 0; i < 2; i++)
+                data[1 - i] = (byte)s.ReadByte();
+            return BitConverter.ToUInt16(data, 0);
+        }
+
+        public static float ReadFloat(Stream s)
+        {
+            byte[] data = new byte[4];
+            for (int i = 0; i < 4; i++)
+                data[3 - i] = (byte)s.ReadByte();
+            return BitConverter.ToSingle(data, 0);
+        }
+
         public static string ReadCString(Stream s)
         {
             uint count = ReadU32(s);
